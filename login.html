@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>注册案例</title>
+    <script src="angular/angular.min.js"></script>
+</head>
+<body>
+<!--视图部分:开始-->
+<table ng-app="myApp" border="1" ng-controller="demo">
+    <tr>
+        <td>用户名:</td>
+        <td><input type="text" ng-model="username"></td>
+    </tr>
+    <tr>
+        <td>密码:</td>
+        <td><input type="text" ng-model="password"></td>
+    </tr>
+    <tr>
+        <td>确认密码:</td>
+        <td><input type="text" ng-model="confirm"></td>
+    </tr>
+    <tr>
+        <td>是否同意:</td>
+        <td><input type="checkbox" ng-model="isAgree">{{mss}}</td>
+    </tr>
+    <tr>
+        <td></td>
+        <td>{{msg}}</td>
+    </tr>
+    <tr>
+        <td>注册按钮:</td>
+        <td><input type="button" ng-click="register()" value="注册"></td>
+    </tr>
+</table>
+<!--视图部分:结束-->
+<script>
+    //创建一个模块
+    var app = angular.module("myApp", [])
+    //创建一个控制器，控制层（Controller）
+    app.controller("demo", function ($scope) {
+        var xinde, Id
+        $scope.msg = "注意......"
+        $scope.mss = "请同意协议！"
+        $scope.username = ""
+        $scope.password = ""
+        $scope.confirm = ""
+        $scope.isAgree = false
+        //判断密码长度
+        $scope.$watch("username", function (xin) {
+            if (xin.length > 6) {
+                $scope.msg = "用户名长度超出！"
+            } else {
+                $scope.msg = "注意......"
+                return
+            }
+        })
+        //判断密码长度
+        $scope.$watch("password", function (xin) {
+            xinde = xin
+            if (xinde.length > 6) {
+                $scope.msg = "密码长度超出！"
+            } else {
+                $scope.msg = "注意......"
+            }
+        })
+        //判断第二次输入密码是否与第一次一致
+        $scope.$watch("confirm", function (xin) {
+            if (xin.length != xinde.length && xin != xinde) {
+                $scope.msg = "两次密码不一致！"
+            } else {
+                $scope.msg = "注意......"
+            }
+        })
+        //判断是否点击复选框
+        $scope.$watch("isAgree", function (xin) {
+            if (xin != true) {
+                $scope.mss = "请同意协议！"
+                return
+            } else {
+                $scope.mss = "谢谢合作！"
+            }
+        })
+        //定义id的数字和字符数组
+        var arry = [0, 1, 2, 3, 4, 5, 6], arr = ["a", "b", "c", "d", "e", "f", "y"]
+        $scope.register = function () {
+            //产生两组随机数
+            var suiji = Math.abs(parseInt(Math.random() * 10) - 6)
+            var suij = Math.abs(parseInt(Math.random() * 10) - 6)
+            //将产生的随机数分别去两个数组匹配，得到的值进行拼接
+            Id = arry[suiji] + arr[suij]
+            //创建一个实例
+            var sav = new User($scope.username, $scope.password)
+            //实例调用save方法，添加用户信息，并判断是否有此用户
+            var jieguo = sav.save()
+            console.log(jieguo)
+            if (jieguo) {
+                $scope.msg = "注册成功！"
+            } else {
+                $scope.msg = "用户已存在，注册失败！"
+            }
+        }
+        //模型部分:开始（model）
+        function User(username, userpassword) {
+            this.username = username
+            this.userpassword = userpassword
+        }
+
+        User.prototype.save = function () {
+            //提取数据若没有则为空数组
+            var dat = localStorage.getItem("user") || "[]"
+            //创建存储定义用户信息的变量
+            var data = "[]"
+            //转换成json
+            var jsonUser = JSON.parse(dat)
+            var jsonData = JSON.parse(data)
+            //判断用户列表中有没有输入的用户名
+            for (var i = 0; i < jsonUser.length; i++) {
+                var item = jsonUser[i]
+                //若有返回false
+                if (item.userone === this.username) {
+                    return false
+                }
+            }
+            //将用户名和密码添加到数组中
+            jsonData.push({username: this.username, password: this.userpassword})
+            //将当前所创建的用户名单独添加到user对应的值中
+            jsonUser.push({userone: this.username})
+            //分别将两个值保存到数据库中
+            localStorage.setItem("user", JSON.stringify(jsonUser))
+            localStorage.setItem("user" + Id, JSON.stringify(jsonData))
+            return true
+        }
+        //模型部分:结束
+    })
+</script>
+
+</body>
+</html>
